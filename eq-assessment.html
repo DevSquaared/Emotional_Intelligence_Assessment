@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUM1002 · Emotional Intelligence Assessment</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #111111;
+    --mid: #555555;
+    --pale: #999999;
+    --rule: #d8d8d8;
+    --bg: #f9f8f6;
+    --white: #ffffff;
+    --accent: #111111;
+  }
+
+  html { font-size: 16px; scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Screens ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── Header bar ── */
+  .site-header {
+    border-bottom: 1px solid var(--rule);
+    padding: 18px 0;
+    margin-bottom: 0;
+  }
+  .site-header .shell {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .header-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--pale);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--mid);
+  }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    height: 2px;
+    background: var(--rule);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── Section chrome ── */
+  .page-section {
+    padding: 56px 0 80px;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pale);
+    margin-bottom: 10px;
+  }
+
+  h1.page-title {
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.25;
+    margin-bottom: 28px;
+    letter-spacing: -0.01em;
+  }
+
+  h2.section-head {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .lede {
+    color: var(--mid);
+    margin-bottom: 32px;
+    max-width: 600px;
+    font-size: 1.05rem;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 40px 0;
+  }
+
+  /* ── Scale legend ── */
+  .scale-legend {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    padding: 14px 20px;
+    margin-bottom: 40px;
+    font-size: 0.88rem;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .scale-legend span {
+    color: var(--mid);
+  }
+  .scale-legend strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ── Dimension block ── */
+  .dimension-block {
+    margin-bottom: 52px;
+  }
+  .dimension-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--pale);
+    border-top: 2px solid var(--ink);
+    padding-top: 10px;
+    margin-bottom: 28px;
+  }
+
+  /* ── Question row ── */
+  .q-row {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .q-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--pale);
+    margin-bottom: 6px;
+  }
+  .q-type {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .q-text {
+    font-size: 1.03rem;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── Likert scale ── */
+  .likert {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .likert input[type="radio"] { display: none; }
+  .likert label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--rule);
+    background: var(--white);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--mid);
+    transition: all 0.12s;
+    user-select: none;
+  }
+  .likert label:hover { border-color: var(--ink); color: var(--ink); }
+  .likert input[type="radio"]:checked + label {
+    background: var(--ink);
+    color: var(--white);
+    border-color: var(--ink);
+  }
+
+  /* ── Multiple choice ── */
+  .mc-options { display: flex; flex-direction: column; gap: 8px; }
+  .mc-options input[type="radio"] { display: none; }
+  .mc-options label {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border: 1px solid var(--rule);
+    background: var(--white);
+    cursor: pointer;
+    font-size: 0.96rem;
+    line-height: 1.55;
+    transition: all 0.12s;
+  }
+  .mc-options label:hover { border-color: var(--ink); }
+  .mc-options input[type="radio"]:checked + label {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--white);
+  }
+  .mc-opt-key {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--pale);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .mc-options input[type="radio"]:checked + label .mc-opt-key {
+    color: var(--rule);
+  }
+
+  /* ── Textarea ── */
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    border: 1px solid var(--rule);
+    background: var(--white);
+    padding: 14px 16px;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  textarea:focus { border-color: var(--ink); }
+  .word-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--pale);
+    text-align: right;
+    margin-top: 5px;
+  }
+
+  /* ── Case study box ── */
+  .case-box {
+    border: 1px solid var(--rule);
+    background: var(--white);
+    padding: 28px 28px;
+    margin-bottom: 40px;
+  }
+  .case-box h3 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .case-box p { font-size: 0.96rem; line-height: 1.7; color: var(--mid); margin-bottom: 10px; }
+  .case-box p:last-child { margin-bottom: 0; }
+  .cast-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .cast-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border: 1px solid var(--rule);
+    color: var(--mid);
+    white-space: nowrap;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block;
+    padding: 13px 36px;
+    background: var(--ink);
+    color: var(--white);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover { opacity: 0.8; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    margin-right: 12px;
+  }
+  .btn-ghost:hover { border-color: var(--ink); opacity: 1; }
+
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .error-msg {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #c0392b;
+    margin-top: 12px;
+    display: none;
+  }
+  .error-msg.visible { display: block; }
+
+  /* ── Cover screen ── */
+  .cover {
+    padding: 80px 0;
+  }
+  .cover .eyebrow { margin-bottom: 16px; }
+  .cover h1 {
+    font-size: 2.6rem;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 28px;
+    letter-spacing: -0.02em;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .cover-meta-item label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--pale);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .cover-meta-item span {
+    font-size: 0.95rem;
+    color: var(--mid);
+  }
+  .cover-instructions {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    margin-bottom: 40px;
+  }
+  .cover-instructions p { font-size: 0.96rem; color: var(--mid); line-height: 1.7; margin-bottom: 8px; }
+  .cover-instructions p:last-child { margin-bottom: 0; }
+  .name-field {
+    margin-bottom: 32px;
+  }
+  .name-field label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mid);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .name-field input {
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid var(--rule);
+    background: var(--white);
+    padding: 11px 14px;
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 1.02rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.12s;
+  }
+  .name-field input:focus { border-color: var(--ink); }
+
+  /* ── Results ── */
+  .results-header {
+    padding: 56px 0 32px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0;
+  }
+  .score-band {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--ink);
+    margin-bottom: 12px;
+  }
+  .total-score {
+    font-size: 4.5rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .score-denom {
+    font-size: 1.5rem;
+    color: var(--pale);
+    font-weight: 400;
+  }
+  .band-desc {
+    color: var(--mid);
+    font-size: 1.05rem;
+    max-width: 560px;
+    margin-top: 14px;
+    margin-bottom: 0;
+  }
+
+  .results-body { padding: 48px 0 80px; }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 48px;
+  }
+  @media (max-width: 580px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    padding: 24px;
+  }
+  .chart-card h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mid);
+    margin-bottom: 20px;
+  }
+  .chart-card.full { grid-column: 1 / -1; }
+
+  .dim-breakdown {
+    margin-top: 40px;
+  }
+  .dim-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .dim-row:first-child { border-top: 1px solid var(--rule); }
+  .dim-name {
+    width: 130px;
+    font-size: 0.93rem;
+    flex-shrink: 0;
+  }
+  .dim-bar-wrap {
+    flex: 1;
+    height: 4px;
+    background: var(--rule);
+    position: relative;
+  }
+  .dim-bar-fill {
+    height: 100%;
+    background: var(--ink);
+    transition: width 0.6s ease;
+  }
+  .dim-score {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--mid);
+    width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .p2-summary {
+    background: var(--white);
+    border: 1px solid var(--rule);
+    padding: 24px;
+    margin-top: 40px;
+  }
+  .p2-summary h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--mid);
+    margin-bottom: 16px;
+  }
+  .p2-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 0.96rem;
+  }
+  .p2-row:last-child { border-bottom: none; }
+  .p2-row span:last-child {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--mid);
+  }
+
+  .print-note {
+    margin-top: 48px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--pale);
+    text-align: center;
+  }
+
+  .restart-wrap {
+    text-align: center;
+    margin-top: 32px;
+  }
+
+  @media print {
+    .btn, .progress-wrap, .site-header { display: none; }
+  }
+
+  @media (max-width: 520px) {
+    .cover h1 { font-size: 2rem; }
+    .total-score { font-size: 3rem; }
+    .likert label { width: 38px; height: 38px; font-size: 0.8rem; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="shell">
+    <span class="header-code">HUM1002</span>
+    <span class="header-title">EI Assessment · Workplace Effectiveness</span>
+  </div>
+</header>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-fill" id="progressFill"></div>
+</div>
+
+<!-- ═══════════════ SCREEN 0: COVER ═══════════════ -->
+<div id="screen-cover" class="screen active">
+  <div class="shell">
+    <div class="cover">
+      <div class="eyebrow">Group Challenging Task</div>
+      <h1>Emotional Intelligence<br>Assessment</h1>
+      <div class="cover-meta">
+        <div class="cover-meta-item">
+          <label>Format</label>
+          <span>35 items across 2 parts</span>
+        </div>
+        <div class="cover-meta-item">
+          <label>Part 1</label>
+          <span>25 core statements · 5 dimensions</span>
+        </div>
+        <div class="cover-meta-item">
+          <label>Part 2</label>
+          <span>Case study + effectiveness items</span>
+        </div>
+        <div class="cover-meta-item">
+          <label>Duration</label>
+          <span>15 – 20 minutes</span>
+        </div>
+      </div>
+      <div class="cover-instructions">
+        <p>Read each statement honestly — not how you wish you behaved, but how you actually do.</p>
+        <p>For Part 1, rate yourself on a scale of 1 (Strongly Disagree) to 5 (Strongly Agree). Behavioural questions ask about your general patterns. Situational questions describe a specific scenario.</p>
+        <p>There are no right or wrong answers. The assessment is only as useful as your honesty.</p>
+      </div>
+      <div class="name-field">
+        <label for="participantName">Your Name (optional)</label>
+        <input type="text" id="participantName" placeholder="e.g. Priya Mehta" autocomplete="name">
+      </div>
+      <button class="btn" onclick="startAssessment()">Begin Assessment →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 1: PART 1 ═══════════════ -->
+<div id="screen-part1" class="screen">
+  <div class="shell">
+    <div class="page-section">
+      <div class="eyebrow">Part 1 of 2</div>
+      <h1 class="page-title">Core Statements</h1>
+      <p class="lede">25 statements across five emotional intelligence dimensions. Rate how accurately each describes your actual behaviour.</p>
+
+      <div class="scale-legend">
+        <span><strong>1</strong> Strongly Disagree</span>
+        <span><strong>2</strong> Disagree</span>
+        <span><strong>3</strong> Neutral</span>
+        <span><strong>4</strong> Agree</span>
+        <span><strong>5</strong> Strongly Agree</span>
+      </div>
+
+      <!-- Dimension 1 -->
+      <div class="dimension-block">
+        <div class="dimension-label">Dimension 1 · Self-Awareness</div>
+        <div id="dim1-questions"></div>
+      </div>
+
+      <!-- Dimension 2 -->
+      <div class="dimension-block">
+        <div class="dimension-label">Dimension 2 · Self-Regulation</div>
+        <div id="dim2-questions"></div>
+      </div>
+
+      <!-- Dimension 3 -->
+      <div class="dimension-block">
+        <div class="dimension-label">Dimension 3 · Motivation</div>
+        <div id="dim3-questions"></div>
+      </div>
+
+      <!-- Dimension 4 -->
+      <div class="dimension-block">
+        <div class="dimension-label">Dimension 4 · Empathy</div>
+        <div id="dim4-questions"></div>
+      </div>
+
+      <!-- Dimension 5 -->
+      <div class="dimension-block">
+        <div class="dimension-label">Dimension 5 · Social Skills</div>
+        <div id="dim5-questions"></div>
+      </div>
+
+      <div class="error-msg" id="part1-error">Please answer all 25 statements before continuing.</div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo('cover')">← Back</button>
+        <button class="btn" onclick="submitPart1()">Continue to Part 2 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 2: PART 2 ═══════════════ -->
+<div id="screen-part2" class="screen">
+  <div class="shell">
+    <div class="page-section">
+      <div class="eyebrow">Part 2 of 2</div>
+      <h1 class="page-title">EI & Workplace Effectiveness</h1>
+
+      <!-- Case Study -->
+      <div class="eyebrow" style="margin-bottom:12px;">Section A · The Nova Project — one case study, five questions</div>
+      <div class="case-box">
+        <h3>The Nova Project — Case Study</h3>
+        <div class="cast-row">
+          <span class="cast-pill">Kabir — newly promoted team lead</span>
+          <span class="cast-pill">Riya — senior analyst, struggling</span>
+          <span class="cast-pill">Arjun — vocal high-performer</span>
+          <span class="cast-pill">Priya & Dev — junior members in conflict</span>
+          <span class="cast-pill">You — experienced team member</span>
+        </div>
+        <p>Your organisation has assigned a cross-functional team to deliver "Project Nova" — a high-priority client proposal due in six weeks. Winning this project means a significant contract; losing it means budget cuts and possible layoffs. Kabir, promoted to team lead just three weeks ago over two other senior candidates, is leading the effort.</p>
+        <p>By Week 2, cracks are already forming. Riya, one of the most experienced analysts, has been visibly disengaged — missing two internal deadlines and delivering below her usual standard. Nobody has addressed it directly.</p>
+        <p>Meanwhile, Arjun has taken over most team discussions. He interrupts others mid-sentence, dismisses ideas he disagrees with, and has twice made sarcastic remarks about Priya's suggestions in front of the group. Priya has stopped speaking up entirely. Dev, frustrated on her behalf, has started arguing back at Arjun, and their disagreement over the final presentation has turned personal and is affecting the whole team's pace.</p>
+        <p>Kabir has privately confided in you that he overheard two senior members — including Arjun — saying management "got the promotion wrong." He is visibly shaken but hasn't addressed it.</p>
+        <p>It is now the morning of the final client presentation. With ten minutes to go, you notice a significant calculation error in the financial slide — the one Riya was responsible for. She is standing nearby, already anxious. Kabir has just been informed. The client is waiting in the next room.</p>
+      </div>
+
+      <!-- Section A questions -->
+      <div id="sectionA-questions"></div>
+
+      <hr class="rule">
+
+      <!-- Section B -->
+      <div class="eyebrow" style="margin-bottom:16px;">Section B · Effectiveness Statements — rate 1 to 5</div>
+      <div class="scale-legend">
+        <span><strong>1</strong> Strongly Disagree</span>
+        <span><strong>2</strong> Disagree</span>
+        <span><strong>3</strong> Neutral</span>
+        <span><strong>4</strong> Agree</span>
+        <span><strong>5</strong> Strongly Agree</span>
+      </div>
+      <div id="sectionB-questions"></div>
+
+      <hr class="rule">
+
+      <!-- Section C -->
+      <div class="eyebrow" style="margin-bottom:16px;">Section C · Descriptive Responses</div>
+      <div id="sectionC-questions"></div>
+
+      <div class="error-msg" id="part2-error">Please complete all required questions before submitting.</div>
+      <div class="nav-row">
+        <button class="btn btn-ghost" onclick="goTo('part1')">← Back</button>
+        <button class="btn" onclick="submitAssessment()">View Results →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 3: RESULTS ═══════════════ -->
+<div id="screen-results" class="screen">
+  <div class="shell">
+    <div class="results-header">
+      <div class="eyebrow" id="results-name-label">Assessment Results</div>
+      <div class="score-band" id="band-label">—</div>
+      <div class="total-score" id="total-score-display">—<span class="score-denom"> / 125</span></div>
+      <p class="band-desc" id="band-desc-text"></p>
+    </div>
+
+    <div class="results-body">
+      <div class="eyebrow" style="margin-bottom:20px;">Dimension Scores</div>
+      <div class="dim-breakdown" id="dim-breakdown"></div>
+
+      <div class="charts-grid" style="margin-top: 48px;">
+        <div class="chart-card">
+          <h3>Score Distribution by Dimension</h3>
+          <canvas id="pieChart" width="280" height="280"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Your Score vs. Average (per dimension)</h3>
+          <canvas id="barChart" width="280" height="280"></canvas>
+        </div>
+      </div>
+
+      <div class="p2-summary" id="p2-summary-block">
+        <h3>Part 2 — Workplace Effectiveness Summary</h3>
+        <div id="p2-rows"></div>
+      </div>
+
+      <div class="restart-wrap">
+        <button class="btn" onclick="restartAssessment()">Retake Assessment</button>
+      </div>
+      <p class="print-note">Use your browser's print function to save a PDF copy of these results.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+
+const PART1_QUESTIONS = [
+  // Dim 1 – Self-Awareness
+  { id: 'q1', dim: 1, type: 'Behavioural', text: 'I can tell when my mood is shifting from "I\'m fine" to "absolutely do not speak to me" before it affects my work.' },
+  { id: 'q2', dim: 1, type: 'Behavioural', text: 'I notice when I\'m being defensive in a conversation, even when I\'d really rather not admit that I am.' },
+  { id: 'q3', dim: 1, type: 'Behavioural', text: 'I\'m aware that my emotional state on Monday morning has a habit of unofficially setting the tone for my entire week.' },
+  { id: 'q4', dim: 1, type: 'Situational', text: 'Your manager gives you feedback that stings a little. You can immediately tell whether your reaction is about the feedback — or about your ego.' },
+  { id: 'q5', dim: 1, type: 'Situational', text: 'You\'re in a meeting and realise halfway through that you\'ve completely checked out. You can pinpoint exactly what triggered it.' },
+  // Dim 2 – Self-Regulation
+  { id: 'q6', dim: 2, type: 'Behavioural', text: 'When things go sideways at work, I resist the urge to take it out on the nearest available person — or object.' },
+  { id: 'q7', dim: 2, type: 'Behavioural', text: 'I can sit through a thoroughly frustrating meeting without visibly losing my patience — or at least, I try my best.' },
+  { id: 'q8', dim: 2, type: 'Behavioural', text: 'I manage to stay focused on a task even when my anxiety is quietly running in the background like an unwanted tab.' },
+  { id: 'q9', dim: 2, type: 'Situational', text: 'A colleague takes credit for your idea in front of the whole team. You respond professionally instead of immediately planning your revenge.' },
+  { id: 'q10', dim: 2, type: 'Situational', text: 'You receive an email that makes your blood boil. You close the laptop, take a breath, and reply thoughtfully — not impulsively.' },
+  // Dim 3 – Motivation
+  { id: 'q11', dim: 3, type: 'Behavioural', text: 'I push myself to complete tasks even when the deadline feels like a distant and completely optional suggestion.' },
+  { id: 'q12', dim: 3, type: 'Behavioural', text: 'After a setback, I manage to get back on track without spending three working days in an existential spiral.' },
+  { id: 'q13', dim: 3, type: 'Behavioural', text: 'I find something to look forward to even in tasks that are, by every measure, completely uninspiring — even if it\'s just the satisfaction of being done.' },
+  { id: 'q14', dim: 3, type: 'Situational', text: 'A project you\'ve invested weeks into gets scrapped without warning. You feel the sting, but redirect that energy into the next one rather than sulking indefinitely.' },
+  { id: 'q15', dim: 3, type: 'Situational', text: 'You\'re assigned a task that is, objectively, boring. You still get it done without someone needing to check in on you every hour like a worried parent.' },
+  // Dim 4 – Empathy
+  { id: 'q16', dim: 4, type: 'Behavioural', text: 'I can tell when a teammate is having a rough day, even when they insist, with great conviction, that everything is "fine."' },
+  { id: 'q17', dim: 4, type: 'Behavioural', text: 'I genuinely try to understand someone\'s frustration before swooping in with my brilliant, unsolicited solution.' },
+  { id: 'q18', dim: 4, type: 'Behavioural', text: 'I adjust how I communicate based on how the other person seems to be feeling — not just what is convenient for me in that moment.' },
+  { id: 'q19', dim: 4, type: 'Situational', text: 'A colleague snaps at you in a meeting. Instead of snapping back, you pause and consider that something beyond the meeting might be going on for them.' },
+  { id: 'q20', dim: 4, type: 'Situational', text: 'You\'re in a conflict where you\'re fairly sure you\'re right. You still make a genuine effort to understand the other person\'s view before deciding what to do.' },
+  // Dim 5 – Social Skills
+  { id: 'q21', dim: 5, type: 'Behavioural', text: 'I can navigate workplace tension without either pretending it doesn\'t exist or accidentally making it awkward for everyone in a five-desk radius.' },
+  { id: 'q22', dim: 5, type: 'Behavioural', text: 'People feel comfortable bringing their problems to me because they know I\'ll actually listen — not just wait for my turn to talk.' },
+  { id: 'q23', dim: 5, type: 'Behavioural', text: 'I contribute to team morale in ways that feel natural, not like a mandatory corporate wellness activity.' },
+  { id: 'q24', dim: 5, type: 'Situational', text: 'Two teammates are in conflict and it\'s quietly affecting the whole group. You step in to help resolve it rather than enjoying the drama from a safe distance.' },
+  { id: 'q25', dim: 5, type: 'Situational', text: 'You need to deliver news that nobody wants to hear. You do it honestly — but in a way that doesn\'t leave the room feeling worse than it absolutely needs to.' },
+];
+
+const SECTION_A = [
+  {
+    id: 'sa1', num: 1, tag: 'Performance',
+    text: 'Riya has been missing deadlines for two weeks and no one has said anything. As a fellow team member — not the lead — what should you have done earlier in the project?',
+    options: [
+      { key: 'A', pts: 4, text: 'Checked in with Riya privately and early — asked how she was doing, offered support, and if needed, flagged your concern to Kabir without making it a formal complaint.' },
+      { key: 'B', pts: 1, text: 'Waited for Kabir to handle it — performance issues are a team lead\'s responsibility, not yours.' },
+      { key: 'C', pts: 2, text: 'Quietly picked up Riya\'s slack yourself without saying anything, to keep the project on track.' },
+      { key: 'D', pts: 3, text: 'Brought it up in a team check-in so everyone was aware of the deadline gap and could plan around it.' },
+    ]
+  },
+  {
+    id: 'sa2', num: 2, tag: 'Teamwork',
+    text: 'Arjun is dominating discussions and Priya has gone completely silent. You are not the team lead. What is the most emotionally intelligent thing you can do in the next team meeting?',
+    options: [
+      { key: 'A', pts: 2, text: 'Confront Arjun directly in the meeting and call out his behaviour in front of everyone — the team needs to see it addressed.' },
+      { key: 'B', pts: 1, text: 'Stay out of it — you are not the lead and stepping in could make things worse or seem like overstepping.' },
+      { key: 'C', pts: 4, text: 'Actively redirect the conversation by saying "Let\'s hear what Priya thinks before we move on," and follow up with Priya privately afterwards to make sure she feels supported.' },
+      { key: 'D', pts: 3, text: 'Speak to Arjun privately after the meeting and let him know, without judgement, how his style is landing on the rest of the team.' },
+    ]
+  },
+  {
+    id: 'sa3', num: 3, tag: 'Leadership',
+    text: 'Kabir knows people doubted his promotion and has been pretending it doesn\'t bother him. If you were Kabir, what would be the most effective way to handle this?',
+    options: [
+      { key: 'A', pts: 2, text: 'Say nothing and let your work speak for itself — reacting to gossip only gives it more power.' },
+      { key: 'B', pts: 2, text: 'Raise it with your own manager and ask them to address the team formally about respecting the decision.' },
+      { key: 'C', pts: 4, text: 'Acknowledge the situation privately with those involved — not to defend yourself, but to open a genuine conversation about how to work well together despite the circumstances.' },
+      { key: 'D', pts: 3, text: 'Address it openly with the whole team in the next meeting — put it on the table so it stops operating in the background.' },
+    ]
+  },
+  {
+    id: 'sa4', num: 4, tag: 'Conflict Resolution',
+    text: 'Priya and Dev\'s disagreement over the presentation has turned personal and is slowing the team down. Kabir asks you to help mediate. What is your approach?',
+    options: [
+      { key: 'A', pts: 2, text: 'Review both their ideas yourself, decide which is better, and present that to the team as the agreed direction.' },
+      { key: 'B', pts: 1, text: 'Tell both of them the conflict is unprofessional and that the deadline doesn\'t allow for personal disagreements right now.' },
+      { key: 'C', pts: 4, text: 'Meet each of them separately first to understand their perspectives, then bring them together to find a combined approach — keeping the focus on the client outcome, not personal pride.' },
+      { key: 'D', pts: 2, text: 'Ask Kabir to split the presentation into two parts — one handled by Priya, one by Dev — so they don\'t have to collaborate directly.' },
+    ]
+  },
+  {
+    id: 'sa5', num: 5, tag: 'Performance',
+    text: 'It is ten minutes before the client presentation. You\'ve spotted the error in Riya\'s slide. Kabir is aware. The client is waiting. What is the most emotionally intelligent response to this moment?',
+    options: [
+      { key: 'A', pts: 1, text: 'Present as planned and quietly skip or gloss over the financial slide — the client may not catch it in the room.' },
+      { key: 'B', pts: 1, text: 'Blame Riya in front of the team for the error so responsibility is clear before walking into the room.' },
+      { key: 'C', pts: 2, text: 'Ask to delay the presentation by 30 minutes, fix the slide properly, and then present.' },
+      { key: 'D', pts: 4, text: 'Calmly acknowledge the error at the start of the presentation, briefly explain the correct figure, reassure the client the full corrected report will follow, and deliver the rest with full composure — while making sure Riya knows privately that the team isn\'t throwing her under the bus.' },
+    ]
+  },
+];
+
+const SECTION_B = [
+  { id: 'sb1', num: 6, tag: 'Teamwork', text: 'When a teammate underperforms, I address it in a way that protects the relationship while still holding them accountable.' },
+  { id: 'sb2', num: 7, tag: 'Leadership', text: 'I adjust my communication and leadership style based on what the person in front of me actually needs — not just what feels comfortable for me.' },
+  { id: 'sb3', num: 8, tag: 'Conflict Resolution', text: 'After a conflict is resolved, I make a conscious effort to rebuild the relationship — not just treat "problem closed" as the finish line.' },
+];
+
+const SECTION_C = [
+  {
+    id: 'sc1', num: 9, tag: 'Leadership · Performance',
+    situation: 'Neha is a team lead at a logistics company managing a team of six during a high-pressure product rollout. One afternoon, a junior team member, Samar, presents an update that contains several errors — errors Neha had specifically warned the team to avoid. In front of the entire group, Neha loses her composure and says, "This is exactly what I asked you not to do. I don\'t understand how you thought this was acceptable." Samar goes quiet for the rest of the meeting. Over the following week, he becomes increasingly withdrawn, stops contributing ideas, and requests a transfer to another team. The rollout suffers because of the lost bandwidth — and Neha is left wondering what went wrong.',
+    prompt: 'Based on this situation, describe what Neha should have done differently — both in the moment and in the days that followed. In your response, identify which specific EI skills were missing and explain how applying them could have changed the outcome for both Samar and the project.',
+    assessors: 'Assessors look for: identification of the EI gap (self-regulation, empathy), a realistic alternative approach, and reflection on how emotions affect team performance.',
+  },
+  {
+    id: 'sc2', num: 10, tag: 'Conflict Resolution · Teamwork',
+    situation: 'A five-person remote team has been working together for four months on a product redesign. Three members are based in Mumbai, one in Bangalore, and one in Pune. Over time, the three Mumbai members have developed an informal dynamic — they make decisions over quick calls and inform the others after the fact. Vikram, the Bangalore member, begins missing deadlines and sending terse one-line responses to messages. The Pune member, Ananya, notices the pattern and quietly reaches out to Vikram — not to fix the work, but simply to ask how he\'s doing and whether he feels included. That one conversation shifts the dynamic: Vikram opens up, the team adjusts how decisions are made, and over the next two weeks, collaboration visibly improves.',
+    prompt: 'What does Ananya\'s action reveal about the role of emotional intelligence in teamwork? Identify the specific EI skill she demonstrated, explain why it was more effective than a task-focused intervention, and reflect on whether you would have noticed and acted the same way — and why or why not.',
+    assessors: 'Assessors look for: naming the EI skill (empathy / social awareness), understanding why emotional intervention outperformed procedural fixes, and honest personal reflection.',
+  },
+];
+
+const DIM_NAMES = ['Self-Awareness', 'Self-Regulation', 'Motivation', 'Empathy', 'Social Skills'];
+const AVG_DIM = [15, 14, 16, 15, 14]; // assumed population averages per dimension (out of 25)
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let state = {
+  name: '',
+  p1: {},    // qId → value (1-5)
+  saAnswers: {},  // saId → pts
+  sbAnswers: {},  // sbId → value (1-5)
+  scWords: {},    // scId → wordCount
+};
+
+let pieChart = null, barChart = null;
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function renderPart1() {
+  const groups = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  PART1_QUESTIONS.forEach(q => groups[q.dim].push(q));
+
+  for (let d = 1; d <= 5; d++) {
+    const container = document.getElementById(`dim${d}-questions`);
+    container.innerHTML = groups[d].map((q, i) => `
+      <div class="q-row">
+        <div class="q-number">${(d - 1) * 5 + i + 1}. <span class="q-type">${q.type}</span></div>
+        <div class="q-text">${q.text}</div>
+        <div class="likert">
+          ${[1,2,3,4,5].map(v => `
+            <input type="radio" name="${q.id}" id="${q.id}_${v}" value="${v}">
+            <label for="${q.id}_${v}">${v}</label>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Re-attach listeners
+  PART1_QUESTIONS.forEach(q => {
+    [1,2,3,4,5].forEach(v => {
+      const el = document.getElementById(`${q.id}_${v}`);
+      if (el) el.addEventListener('change', () => { state.p1[q.id] = v; });
+    });
+  });
+}
+
+function renderPart2() {
+  // Section A
+  const saContainer = document.getElementById('sectionA-questions');
+  saContainer.innerHTML = SECTION_A.map(q => `
+    <div class="q-row">
+      <div class="q-number">${q.num}. <span class="q-type">${q.tag}</span></div>
+      <div class="q-text">${q.text}</div>
+      <div class="mc-options">
+        ${q.options.map(opt => `
+          <input type="radio" name="${q.id}" id="${q.id}_${opt.key}" value="${opt.pts}">
+          <label for="${q.id}_${opt.key}">
+            <span class="mc-opt-key">${opt.key}</span>
+            <span>${opt.text}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  SECTION_A.forEach(q => {
+    q.options.forEach(opt => {
+      const el = document.getElementById(`${q.id}_${opt.key}`);
+      if (el) el.addEventListener('change', () => { state.saAnswers[q.id] = opt.pts; });
+    });
+  });
+
+  // Section B
+  const sbContainer = document.getElementById('sectionB-questions');
+  sbContainer.innerHTML = SECTION_B.map(q => `
+    <div class="q-row">
+      <div class="q-number">${q.num}. <span class="q-type">${q.tag}</span></div>
+      <div class="q-text">${q.text}</div>
+      <div class="likert">
+        ${[1,2,3,4,5].map(v => `
+          <input type="radio" name="${q.id}" id="${q.id}_${v}" value="${v}">
+          <label for="${q.id}_${v}">${v}</label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  SECTION_B.forEach(q => {
+    [1,2,3,4,5].forEach(v => {
+      const el = document.getElementById(`${q.id}_${v}`);
+      if (el) el.addEventListener('change', () => { state.sbAnswers[q.id] = v; });
+    });
+  });
+
+  // Section C
+  const scContainer = document.getElementById('sectionC-questions');
+  scContainer.innerHTML = SECTION_C.map(q => `
+    <div class="q-row">
+      <div class="q-number">${q.num}. <span class="q-type">${q.tag}</span></div>
+      <div style="background:var(--white);border:1px solid var(--rule);padding:18px 20px;margin-bottom:14px;font-size:0.94rem;color:var(--mid);line-height:1.7;">${q.situation}</div>
+      <div class="q-text" style="margin-bottom:10px;">${q.prompt}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--pale);margin-bottom:10px;font-style:italic;">${q.assessors}</div>
+      <textarea id="${q.id}_text" placeholder="Write your response here…" oninput="updateWordCount('${q.id}')"></textarea>
+      <div class="word-count" id="${q.id}_wc">0 words</div>
+    </div>
+  `).join('');
+}
+
+function updateWordCount(id) {
+  const ta = document.getElementById(`${id}_text`);
+  const wc = document.getElementById(`${id}_wc`);
+  const words = ta.value.trim() === '' ? 0 : ta.value.trim().split(/\s+/).length;
+  state.scWords[id] = words;
+  wc.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function goTo(screenName) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${screenName}`).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  updateProgress(screenName);
+}
+
+function updateProgress(screen) {
+  const map = { cover: 0, part1: 33, part2: 66, results: 100 };
+  document.getElementById('progressFill').style.width = (map[screen] || 0) + '%';
+}
+
+function startAssessment() {
+  state.name = document.getElementById('participantName').value.trim();
+  goTo('part1');
+}
+
+function submitPart1() {
+  const answered = PART1_QUESTIONS.filter(q => state.p1[q.id] !== undefined).length;
+  if (answered < 25) {
+    const err = document.getElementById('part1-error');
+    err.classList.add('visible');
+    // Scroll to first unanswered
+    const first = PART1_QUESTIONS.find(q => state.p1[q.id] === undefined);
+    if (first) {
+      const el = document.querySelector(`[name="${first.id}"]`);
+      if (el) el.closest('.q-row').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    return;
+  }
+  document.getElementById('part1-error').classList.remove('visible');
+  goTo('part2');
+}
+
+function submitAssessment() {
+  // Check Section A (all 5 answered)
+  const saAnswered = SECTION_A.filter(q => state.saAnswers[q.id] !== undefined).length;
+  // Check Section B (all 3 answered)
+  const sbAnswered = SECTION_B.filter(q => state.sbAnswers[q.id] !== undefined).length;
+
+  if (saAnswered < 5 || sbAnswered < 3) {
+    const err = document.getElementById('part2-error');
+    err.classList.add('visible');
+    err.textContent = 'Please answer all questions in Sections A and B before submitting.';
+    return;
+  }
+
+  // Collect word counts for SC
+  SECTION_C.forEach(q => {
+    const ta = document.getElementById(`${q.id}_text`);
+    if (ta) {
+      const words = ta.value.trim() === '' ? 0 : ta.value.trim().split(/\s+/).length;
+      state.scWords[q.id] = words;
+    }
+  });
+
+  document.getElementById('part2-error').classList.remove('visible');
+  computeAndShowResults();
+  goTo('results');
+}
+
+// ═══════════════════════════════════════════════
+// SCORING
+// ═══════════════════════════════════════════════
+function wordCountScore(words) {
+  // Returns a score out of 10 based on word count
+  if (words < 30)  return 3 + Math.floor(Math.random() * 2);       // 3-4
+  if (words < 80)  return 5 + Math.floor(Math.random() * 2);       // 5-6
+  if (words < 140) return 7 + Math.floor(Math.random() * 2);       // 7-8
+  return 9 + Math.floor(Math.random() * 2);                        // 9-10
+}
+
+function computeAndShowResults() {
+  // Part 1: dimension scores
+  const dimScores = [0, 0, 0, 0, 0];
+  PART1_QUESTIONS.forEach(q => {
+    dimScores[q.dim - 1] += state.p1[q.id] || 0;
+  });
+  const p1Total = dimScores.reduce((a, b) => a + b, 0);
+
+  // Band
+  let band, bandDesc;
+  if (p1Total >= 100) {
+    band = 'High EI';
+    bandDesc = 'Strong emotional awareness and workplace effectiveness. Ready for leadership-level responsibility.';
+  } else if (p1Total >= 63) {
+    band = 'Moderate EI';
+    bandDesc = 'Functional EI with identifiable gaps. Targeted training and self-reflection can bridge the distance.';
+  } else {
+    band = 'Low EI';
+    bandDesc = 'Significant development needed. A structured EI programme is strongly recommended — the good news is it\'s very learnable.';
+  }
+
+  // Display header
+  const nameLabel = state.name ? `${state.name} · Assessment Results` : 'Assessment Results';
+  document.getElementById('results-name-label').textContent = nameLabel;
+  document.getElementById('band-label').textContent = band;
+  document.getElementById('total-score-display').innerHTML = `${p1Total}<span class="score-denom"> / 125</span>`;
+  document.getElementById('band-desc-text').textContent = bandDesc;
+
+  // Dimension breakdown bars
+  const breakdown = document.getElementById('dim-breakdown');
+  breakdown.innerHTML = dimScores.map((score, i) => `
+    <div class="dim-row">
+      <div class="dim-name">${DIM_NAMES[i]}</div>
+      <div class="dim-bar-wrap">
+        <div class="dim-bar-fill" style="width:${(score / 25) * 100}%"></div>
+      </div>
+      <div class="dim-score">${score} / 25</div>
+    </div>
+  `).join('');
+
+  // Part 2 scores
+  const saTotal = SECTION_A.reduce((sum, q) => sum + (state.saAnswers[q.id] || 0), 0);
+  const sbTotal = SECTION_B.reduce((sum, q) => sum + (state.sbAnswers[q.id] || 0), 0);
+  const sc1Score = wordCountScore(state.scWords['sc1'] || 0);
+  const sc2Score = wordCountScore(state.scWords['sc2'] || 0);
+
+  const p2Rows = document.getElementById('p2-rows');
+  p2Rows.innerHTML = `
+    <div class="p2-row"><span>Section A · Case Study (Nova Project)</span><span>${saTotal} / 20</span></div>
+    <div class="p2-row"><span>Section B · Effectiveness Statements</span><span>${sbTotal} / 15</span></div>
+    <div class="p2-row"><span>Q9 · Leadership & Performance (written)</span><span>${sc1Score} / 10</span></div>
+    <div class="p2-row"><span>Q10 · Conflict Resolution & Teamwork (written)</span><span>${sc2Score} / 10</span></div>
+  `;
+
+  // Charts
+  renderCharts(dimScores);
+}
+
+function renderCharts(dimScores) {
+  // Destroy old charts if they exist
+  if (pieChart) { pieChart.destroy(); pieChart = null; }
+  if (barChart) { barChart.destroy(); barChart = null; }
+
+  const grays = ['#111', '#444', '#777', '#aaa', '#ccc'];
+
+  // Pie chart
+  const pieCtx = document.getElementById('pieChart').getContext('2d');
+  pieChart = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: DIM_NAMES,
+      datasets: [{
+        data: dimScores,
+        backgroundColor: grays,
+        borderColor: '#f9f8f6',
+        borderWidth: 3,
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: "'DM Mono', monospace", size: 10 },
+            color: '#555',
+            boxWidth: 12,
+            padding: 12,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.raw} / 25`
+          }
+        }
+      },
+      cutout: '55%',
+    }
+  });
+
+  // Bar chart – your score vs average
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  const shortNames = ['Self-Aware.', 'Self-Reg.', 'Motivation', 'Empathy', 'Social'];
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: shortNames,
+      datasets: [
+        {
+          label: 'Your Score',
+          data: dimScores,
+          backgroundColor: '#111',
+        },
+        {
+          label: 'Average',
+          data: AVG_DIM,
+          backgroundColor: '#ccc',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: "'DM Mono', monospace", size: 10 },
+            color: '#555',
+            boxWidth: 12,
+            padding: 12,
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} / 25`
+          }
+        }
+      },
+      scales: {
+        y: {
+          min: 0,
+          max: 25,
+          ticks: {
+            font: { family: "'DM Mono', monospace", size: 9 },
+            color: '#999',
+            stepSize: 5,
+          },
+          grid: { color: '#e8e8e8' },
+          border: { color: '#d8d8d8' }
+        },
+        x: {
+          ticks: {
+            font: { family: "'DM Mono', monospace", size: 9 },
+            color: '#555',
+          },
+          grid: { display: false },
+          border: { color: '#d8d8d8' }
+        }
+      }
+    }
+  });
+}
+
+function restartAssessment() {
+  state = { name: '', p1: {}, saAnswers: {}, sbAnswers: {}, scWords: {} };
+  // Clear Part 1
+  PART1_QUESTIONS.forEach(q => {
+    [1,2,3,4,5].forEach(v => {
+      const el = document.getElementById(`${q.id}_${v}`);
+      if (el) el.checked = false;
+    });
+  });
+  document.getElementById('participantName').value = '';
+  goTo('cover');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+renderPart1();
+renderPart2();
+updateProgress('cover');
+</script>
+</body>
+</html>
